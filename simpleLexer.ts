@@ -1,9 +1,10 @@
+import keyworks, { keyworksList, matchKeywords } from './utils/keywords';
 import DfaState from './dfaState'
 import TokenType from './tokenType'
 import { isAlpha, isDigit } from './utils/charType'
 
 class SimpleToken {
-  text: string
+  text: string = ''
   type: TokenType
 }
 
@@ -11,11 +12,16 @@ class SimpleToken {
 class SimpleLexer {
   private curToken: SimpleToken
   private tokenList: SimpleToken[] = []
+  private curKeywordsList = keyworksList
 
   private getInitTokenInfo(ch: string): ([DfaState, TokenType] | void) {
-    if (isAlpha(ch)) {              //第一个字符是字母
-      if (ch === 'i') {
-        return [DfaState.Id_int1, TokenType.Identifier]
+    if (isAlpha(ch)) {  //第一个字符是字母
+      const matchedKeywordsList = matchKeywords(keyworksList, ch)
+      // 判断是否有匹配的关键字
+      if (matchedKeywordsList.length > 0) {
+        // 有则把所有匹配的关键字组成列表，供下次查找
+        this.curKeywordsList = matchedKeywordsList
+        return [DfaState.Id_Keyword, TokenType.Identifier]
       } else {
         return [DfaState.Id, TokenType.Identifier]
       }
@@ -48,15 +54,11 @@ class SimpleLexer {
     }
   }
 
-  // 确定初始状态，保存上一轮结果
-  private initToken(ch: string): DfaState {
-    // 保存token
-    if (this.curToken.text?.length > 0) {
-      this.tokenList.push(this.curToken)
-      this.curToken = new SimpleToken()
-    }
-
-    // 初始化当前token状态
+  private saveCurToken() {
+    this.tokenList.push(this.curToken)
+    this.curToken = new SimpleToken()
+  }
+  private getNewState(ch: string): DfaState {
     const [state, type] = this.getInitTokenInfo(ch) || []
     if (state !== undefined && type !== undefined) {
       this.curToken.type = type
@@ -71,19 +73,21 @@ class SimpleLexer {
     this.tokenList = []
     this.curToken = new SimpleToken
     let state: DfaState = DfaState.Initial
+
     // 遍历字符串
     for (let i = 0; i < code.length; i++) {
       const ch = code[i]
       switch (state) {
         case DfaState.Initial:
-          state = this.initToken(ch)
+          state = this.getNewState(ch)
           break;
         case DfaState.Id:
           if (isAlpha(ch) || isDigit(ch)) {
             this.curToken.text += ch
           } else {
             // 不是字符或数字，则保存并重新开始下一个token的计算
-            state = this.initToken(ch)
+            this.saveCurToken()
+            state = this.getNewState(ch)
           }
           break;
         case DfaState.GT:
@@ -92,7 +96,8 @@ class SimpleLexer {
             this.curToken.text += ch
             state = DfaState.GE
           } else {
-            state = this.initToken(ch)
+            this.saveCurToken()
+            state = this.getNewState(ch)
           }
           break;
         case DfaState.GE:
@@ -104,52 +109,44 @@ class SimpleLexer {
         case DfaState.SemiColon:
         case DfaState.LeftParen:
         case DfaState.RightParen:
-          state = this.initToken(ch)
+          this.saveCurToken()
+          state = this.getNewState(ch)
           break;
         case DfaState.IntLiteral:
           if (isDigit(ch)) {
             this.curToken.text += ch
           } else {
-            state = this.initToken(ch)
+            this.saveCurToken()
+            state = this.getNewState(ch)
           }
           break;
-        case DfaState.Id_int1:
-          if (ch === 'n') {
-            state = DfaState.Id_int2;
-            this.curToken.text += ch
-          } else if (isDigit(ch) || isAlpha(ch)) {
-            state = DfaState.Id
-            this.curToken.text += ch
-          } else {
-            state = this.initToken(ch)
-          }
-          break;
-        case DfaState.Id_int2:
-          if (ch === 't') {
-            state = DfaState.Id_int3
-            this.curToken.text += ch
-          } else if (isDigit(ch) || isAlpha(ch)) {
-            state = DfaState.Id
-            this.curToken.text += ch
-          } else {
-            state = this.initToken(ch)
-          }
-          break;
-        case DfaState.Id_int3:
+        case DfaState.Id_Keyword:
+          // 判断是否是字符或数字，不是则保存关键字，重新计算token
           if (isAlpha(ch) || isDigit(ch)) {
-            state = DfaState.Id
-            this.curToken.text += ch
+            this.curKeywordsList = matchKeywords(this.curKeywordsList, this.curToken.text + ch)
+            // 判断是否依然在关键字列表内
+            if (this.curKeywordsList.length > 0) {
+              this.curToken.text += ch
+            } else {
+              state = DfaState.Id
+              this.curToken.text += ch
+            }
           } else {
-            this.curToken.type = TokenType.Int
-            state = this.initToken(ch)
+            console.log('保存')
+            // 保存类型
+            this.curToken.type = keyworks[keyworksList[0]]
+            // 保存token
+            this.saveCurToken()
+            state = this.getNewState(ch)
           }
           break;
+
         default:
           throw new Error('未知状态')
       }
     }
-    if(this.curToken.text.length > 0) {
-      this.initToken('')
+    if (this.curToken.text.length > 0) {
+      this.saveCurToken()
     }
     return this.tokenList
   }

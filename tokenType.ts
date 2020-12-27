@@ -20,6 +20,7 @@ enum TokenType {
   Else,
 
   Int,
+  Char,
 
   Identifier,     //标识符
 
