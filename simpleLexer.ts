@@ -1,11 +1,6 @@
 import DfaState from './dfaState'
 import TokenType from './tokenType'
 import { isAlpha, isDigit } from './utils/charType'
-// 词法分析
-// 目标：分析出以下语句
-// age >= 45
-// int age = 40
-// 2+3*5
 
 class SimpleToken {
   text: string
