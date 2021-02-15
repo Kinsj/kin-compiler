@@ -1,9 +1,10 @@
-import keyworks, { keyworksList, matchKeywords } from './utils/keywords';
+import keyworks, { keyworksList, matchKeywords } from '../utils/keywords';
 import DfaState from './dfaState'
 import TokenType from './tokenType'
-import { isAlpha, isDigit } from './utils/charType'
+import { isAlpha, isDigit } from '../utils/charType'
+import SimpleTokenReader from './tokenReader';
 
-class SimpleToken {
+export class SimpleToken {
   text: string = ''
   type: TokenType
 }
@@ -69,7 +70,7 @@ class SimpleLexer {
     return DfaState.Initial
   }
 
-  public parse(code: string) {
+  public tokenize(code: string) {
     this.tokenList = []
     this.curToken = new SimpleToken
     let state: DfaState = DfaState.Initial
@@ -132,7 +133,6 @@ class SimpleLexer {
               this.curToken.text += ch
             }
           } else {
-            console.log('保存')
             // 保存类型
             this.curToken.type = keyworks[keyworksList[0]]
             // 保存token
@@ -148,7 +148,7 @@ class SimpleLexer {
     if (this.curToken.text.length > 0) {
       this.saveCurToken()
     }
-    return this.tokenList
+    return new SimpleTokenReader(this.tokenList)
   }
 }
 

@@ -1,4 +1,4 @@
-import SimpleLexer from './simpleLexer'
+import SimpleLexer from './lexer/simpleLexer'
 
 // 词法分析
 // 目标：分析出以下语句
@@ -6,6 +6,6 @@ import SimpleLexer from './simpleLexer'
 // int age = 40
 // 2+3*5
 const lexer = new SimpleLexer
-console.log(lexer.parse('age >= 45'))
-console.log(lexer.parse('int age = 40'))
-console.log(lexer.parse('2+3*5'))
+console.log(lexer.tokenize('age >= 45').dumpAll())
+console.log(lexer.tokenize('int age = 40').dumpAll())
+console.log(lexer.tokenize('2+3*5').dumpAll())

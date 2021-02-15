@@ -1,4 +1,4 @@
-import TokenType from "../tokenType";
+import TokenType from "../lexer/tokenType";
 
 const keywords = {
   int: TokenType.Int,
