@@ -6,6 +6,6 @@ import SimpleLexer from './lexer/simpleLexer'
 // int age = 40
 // 2+3*5
 const lexer = new SimpleLexer
-console.log(lexer.tokenize('age >= 45').dumpAll())
-console.log(lexer.tokenize('int age = 40').dumpAll())
-console.log(lexer.tokenize('2+3*5').dumpAll())
+lexer.tokenize('age >= 45').dumpAll()
+lexer.tokenize('int age = 40').dumpAll()
+lexer.tokenize('2+3*5').dumpAll()
