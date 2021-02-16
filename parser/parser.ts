@@ -29,10 +29,10 @@ class Parser {
         child = this.expressionStatement(tokens)
       }
 
-      // // 赋值语句分析
-      // if (!child) {
-      //   child = assignmentStatement(tokens)
-      // }
+      // 赋值语句分析
+      if (!child) {
+        child = this.assignmentStatement(tokens)
+      }
 
       // 错误检查
       if (child) {
@@ -50,7 +50,7 @@ class Parser {
    * int a
    * int b = 2 * 3
    */
-  private intDeclare(tokens: SimpleTokenReader): ASTNode {
+  private intDeclare(tokens: SimpleTokenReader): ASTNode | undefined {
     let node: ASTNode
     let token = getIntDeclareToken(tokens)
 
@@ -73,16 +73,43 @@ class Parser {
 
     // 语句结束判断
     if(node && !endWithSemi(tokens)) {
-      throw new Error('赋值语句必须有 ;')
+      throw new Error('语句缺少 ;')
     }
 
     return node
   }
 
   /**
+   * 赋值语句
+   * @param tokens 
+   */
+  private assignmentStatement(tokens: SimpleTokenReader): ASTNode | undefined {
+    if (tokens.peek()?.type === TokenType.Identifier) {
+      let token = tokens.read()
+      if (tokens.peek()?.type === TokenType.Assignment) {
+        const node = new ASTNode(ASTNodeType.AssignmentStmt, token.text) // 创建赋值变量节点
+        tokens.read() // 取出等号
+        const child = this.additive(tokens)
+        if (child) {
+          if (!endWithSemi(tokens)) {
+            throw new Error('语句缺少 ;')
+          } else {
+            node.addChild(child)
+            return node
+          }
+        } else {
+          throw new Error('等号后面缺少表达式')
+        }
+      } else {
+        tokens.unread()
+      }
+    }
+  }
+
+  /**
    * 表达式语句
    */
-  private expressionStatement(tokens: SimpleTokenReader): ASTNode {
+  private expressionStatement(tokens: SimpleTokenReader): ASTNode | undefined {
     const pos = tokens.getPosition() // 记录pos，用于回溯
     // 解析表达式
     const node = this.additive(tokens)
@@ -99,7 +126,7 @@ class Parser {
    * 加法表达式
    * @param tokens
    */
-  private additive(tokens: SimpleTokenReader): ASTNode {
+  private additive(tokens: SimpleTokenReader): ASTNode | undefined {
     let child1: ASTNode = this.multiplicative(tokens)
     let node = child1
     
@@ -130,7 +157,7 @@ class Parser {
    * 乘法表达式
    * @param tokens
    */
-  private multiplicative(tokens: SimpleTokenReader): ASTNode {
+  private multiplicative(tokens: SimpleTokenReader): ASTNode| undefined {
     let child1: ASTNode = this.primary(tokens)
     let node = child1
     
@@ -161,7 +188,7 @@ class Parser {
    * 基础表达式
    * @param tokens
    */
-  private primary(tokens: SimpleTokenReader): ASTNode {
+  private primary(tokens: SimpleTokenReader): ASTNode | undefined {
     let token = tokens.read()  // 读取一个token
     if (token) {
       switch (token.type) {

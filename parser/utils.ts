@@ -4,7 +4,7 @@ import TokenType from "../lexer/tokenType";
 
 export const endWithSemi = (tokens: SimpleTokenReader) => {
   if (tokens.peek()?.type === TokenType.SemiColon) {
-    tokens.read()
+    tokens.read() // 拿掉分号
     return true
   } else {
     return false

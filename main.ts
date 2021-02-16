@@ -12,4 +12,11 @@ import Parser from './parser/parser'
 // lexer.tokenize('2+3*5').dumpAll()
 
 const parser = new Parser()
-parser.dumpAST(parser.parse('int a = 1;'))
+parser.dumpAST(
+  parser.parse(
+    ` int age = 45+2;
+      age= 20;
+      age+10*2;
+    `
+  )
+)
