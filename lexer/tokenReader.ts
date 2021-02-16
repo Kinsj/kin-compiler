@@ -9,7 +9,7 @@ class SimpleTokenReader {
   }
 
   read() {
-    if (this.pos < this.tokens.length - 1) {
+    if (this.pos < this.tokens.length) {
       return this.tokens[this.pos ++]
     } else {
       return null
@@ -17,7 +17,7 @@ class SimpleTokenReader {
   }
 
   peek() {
-    if (this.pos < this.tokens.length - 1) {
+    if (this.pos < this.tokens.length) {
       return this.tokens[this.pos]
     } else {
       return null
