@@ -137,7 +137,7 @@ class Parser {
         const child2 = this.multiplicative(tokens)
         if (child2) {
           // 创建一个加法节点并添加两个子节点
-          node = new ASTNode(ASTNodeType.Multiplicative, token.text)
+          node = new ASTNode(ASTNodeType.Additive, token.text)
           node.addChild(child1)
           node.addChild(child2)
           // 把这个加法节点作为子节点1，带入下次循环继续执行（可能存在 1+2+3+4 这种运算）
